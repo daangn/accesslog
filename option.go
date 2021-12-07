@@ -1,4 +1,4 @@
-package reqlog
+package accesslog
 
 import (
 	"context"

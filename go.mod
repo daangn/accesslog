@@ -1,4 +1,4 @@
-module github.com/daangn/reqlog
+module github.com/daangn/accesslog
 
 go 1.17
 
