@@ -43,7 +43,10 @@ func NewFluentLogWriter(tag, host string, port int) (*FluentLogWriter, error) {
 
 // Close closes underlying connections with the Fluent daemon.
 func (f *FluentLogWriter) Close() error {
-	return fmt.Errorf("close fluent log writer: %w", f.logger.Close())
+	if err := f.logger.Close(); err != nil {
+		return fmt.Errorf("close fluent log writer: %w", err)
+	}
+	return nil
 }
 
 // Write writes a log.
