@@ -56,15 +56,23 @@ func (le *HTTPLogEntry) SetData(data json.RawMessage) {
 
 // MarshalZerologObject implements zerolog.LogObjectMarshaler.
 func (le *HTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("path", le.r.URL.Path).
+	e.Str("remoteAddr", le.r.RemoteAddr).
+		Str("path", le.r.URL.Path).
 		Str("method", le.r.Method).
 		Int("status", le.ww.Status()).
 		Str("ua", le.r.UserAgent())
 
-	if ip := le.r.Header.Get("x-forwarded-for"); ip != "" {
-		e.Str("client", ip)
-	} else {
-		e.Str("client", le.r.RemoteAddr)
+	if val := le.r.Header.Get("authority"); val != "" {
+		e.Str("authority", val)
+	}
+	if val := le.r.Header.Get("X-Forwarded-For"); val != "" {
+		e.Str("X-Forwarded-For", val)
+	}
+	if val := le.r.Header.Get("X-Envoy-External-Address"); val != "" {
+		e.Str("X-Envoy-External-Address", val)
+	}
+	if val := le.r.Header.Get("X-Request-ID"); val != "" {
+		e.Str("X-Request-ID", val)
 	}
 
 	if le.r.URL.RawQuery != "" {
