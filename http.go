@@ -62,6 +62,10 @@ func (le *HTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
 		Int("status", le.ww.Status()).
 		Str("ua", le.r.UserAgent())
 
+	if le.r.URL.RawQuery != "" {
+		e.Str("qs", le.r.URL.RawQuery)
+	}
+
 	if le.userGetter != nil {
 		userID := le.userGetter.GetUserID(le.r.Context())
 		if userID != 0 {
