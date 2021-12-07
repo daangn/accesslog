@@ -6,10 +6,10 @@ This example is more specific example for production use case. In this scenario,
 ![diagram](misc/diagram.png)
 
 A brief description of the resources illustrated in the diagram above.
-- [Fluent Bit](https://fluentbit.io/); It is a log forwarder.
-- [Amazon S3](https://aws.amazon.com/s3/); It is a cloud object storage.
-- [AWS Glue](https://aws.amazEon.com/glue); It is a serverless [ETL](https://en.wikipedia.org/wiki/Extract,_transform,_load) service.
-- [Amazon Athena](https://aws.amazon.com/athena); It is a serverless query service that makes it easy to analyze data directly in S3 using standard SQL.
+- [Fluent Bit](https://fluentbit.io/); A log forwarder.
+- [Amazon S3](https://aws.amazon.com/s3/); A cloud object storage.
+- [AWS Glue](https://aws.amazEon.com/glue); A serverless [ETL](https://en.wikipedia.org/wiki/Extract,_transform,_load) service.
+- [Amazon Athena](https://aws.amazon.com/athena); A serverless query service that makes it easy to analyze data directly in S3 using standard SQL.
 
 ## Prerequisites
 - Golang 1.17+
