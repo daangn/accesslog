@@ -28,20 +28,26 @@ type UserGetter interface {
 // WithUserGetter sets the given user getter for the logger.
 func WithUserGetter(getter UserGetter) Option {
 	return func(cfg *config) {
-		cfg.userGetter = getter
+		if getter != nil {
+			cfg.userGetter = getter
+		}
 	}
 }
 
 // WithWriter sets the given writer for the logger.
 func WithWriter(writer io.Writer) Option {
 	return func(cfg *config) {
-		cfg.writer = writer
+		if writer != nil {
+			cfg.writer = writer
+		}
 	}
 }
 
 // WithHTTPLogFormatter sets the given formatter for the logger.
-func WithHTTPLogFormatter(formater HTTPLogFormatter) Option {
+func WithHTTPLogFormatter(formatter HTTPLogFormatter) Option {
 	return func(cfg *config) {
-		cfg.httpLogFormatter = formater
+		if formatter != nil {
+			cfg.httpLogFormatter = formatter
+		}
 	}
 }

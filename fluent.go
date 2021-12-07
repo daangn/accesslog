@@ -21,7 +21,7 @@ type FluentLogWriter struct {
 	logger *fluent.Fluent
 }
 
-// NewFluentLogWriter creates a new FluentLogWriter
+// NewFluentLogWriter creates a new FluentLogWriter.
 func NewFluentLogWriter(tag, host string, port int) (*FluentLogWriter, error) {
 	f, err := fluent.New(fluent.Config{
 		FluentHost:   host,
