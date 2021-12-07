@@ -56,7 +56,7 @@ func (le *HTTPLogEntry) SetData(data json.RawMessage) {
 
 // MarshalZerologObject implements zerolog.LogObjectMarshaler.
 func (le *HTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("addr", le.r.Host).
+	e.Str("client", le.r.RemoteAddr).
 		Str("path", le.r.URL.Path).
 		Str("method", le.r.Method).
 		Int("status", le.ww.Status()).
