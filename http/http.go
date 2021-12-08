@@ -21,9 +21,9 @@ func Middleware(opts ...accesslog.Option) func(next http.Handler) http.Handler {
 			ww := chi_middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 			entry := logger.HttpLogFormatter.NewLogEntry(r, ww, logger.UserGetter)
 
-			t1 := time.Now()
+			t := time.Now().UTC()
 			defer func() {
-				logger.Write(entry, time.Since(t1))
+				logger.Write(entry, t)
 			}()
 
 			next.ServeHTTP(ww, RequestWithLogEntry(r, entry))

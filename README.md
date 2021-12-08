@@ -1,5 +1,5 @@
 # accesslog
-accesslog provides access logs that capture detailed information abouut requests sent to your services. Each log contains information such as the time the log was writed, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
+accesslog provides access logs that capture detailed information abouut requests sent to your services. Each log contains information such as the time the request was created, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
 
 ## Installation
 ```shell

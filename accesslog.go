@@ -38,11 +38,11 @@ func NewLogger(opts ...Option) *Logger {
 }
 
 // Write writes a log.
-func (l *Logger) Write(le LogEntry, elapsed time.Duration) {
+func (l *Logger) Write(le LogEntry, t time.Time) {
 	l.Log().
 		EmbedObject(le).
-		Time("time", time.Now().UTC()).
-		Dur("dur(ms)", elapsed).
+		Time("time", t).
+		Dur("dur(ms)", time.Since(t)).
 		Send()
 }
 
