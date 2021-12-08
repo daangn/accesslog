@@ -1,4 +1,4 @@
-package accesslog
+package http
 
 import (
 	"context"
@@ -8,11 +8,13 @@ import (
 
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog"
+
+	"github.com/daangn/accesslog"
 )
 
 // Middleware returns middleware that will log incoming requests.
-func Middleware(opts ...Option) func(next http.Handler) http.Handler {
-	logger := NewLogger(opts...)
+func Middleware(opts ...accesslog.Option) func(next http.Handler) http.Handler {
+	logger := accesslog.NewLogger(opts...)
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +35,7 @@ func Middleware(opts ...Option) func(next http.Handler) http.Handler {
 type DefaultHTTPLogFormatter struct{}
 
 // NewLogEntry creates a new LogEntry.
-func (f *DefaultHTTPLogFormatter) NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter, userGetter UserGetter) LogEntry {
+func (f *DefaultHTTPLogFormatter) NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter, userGetter accesslog.UserGetter) accesslog.LogEntry {
 	return &HTTPLogEntry{
 		r:          r,
 		ww:         ww,
@@ -45,7 +47,7 @@ func (f *DefaultHTTPLogFormatter) NewLogEntry(r *http.Request, ww chi_middleware
 type HTTPLogEntry struct {
 	r          *http.Request
 	ww         chi_middleware.WrapResponseWriter
-	userGetter UserGetter
+	userGetter accesslog.UserGetter
 	data       json.RawMessage
 }
 
@@ -92,8 +94,8 @@ func (le *HTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
 }
 
 // RequestWithLogEntry returns request that has a context with LogEntry.
-func RequestWithLogEntry(r *http.Request, entry LogEntry) *http.Request {
-	r = r.WithContext(context.WithValue(r.Context(), LogEntryCtxKey, entry))
+func RequestWithLogEntry(r *http.Request, entry accesslog.LogEntry) *http.Request {
+	r = r.WithContext(context.WithValue(r.Context(), accesslog.LogEntryCtxKey, entry))
 
 	return r
 }

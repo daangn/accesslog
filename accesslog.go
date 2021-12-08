@@ -51,7 +51,7 @@ type HTTPLogFormatter interface {
 	NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter, userGetter UserGetter) LogEntry
 }
 
-// LogEntry is the interface for the each log entry. It embeds zerolog.LogObjectMarshaler.
+// LogEntry is the interface for each log entry. It embeds zerolog.LogObjectMarshaler.
 type LogEntry interface {
 	zerolog.LogObjectMarshaler
 

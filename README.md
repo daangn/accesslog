@@ -13,14 +13,15 @@ package main
 
 import (
 	"net/http"
-	
+
 	"github.com/go-chi/chi"
 	"github.com/daangn/accesslog"
+	httpaccesslog "github.com/daangn/accesslog/http"
 )
 
 func main() {
 	r := chi.NewRouter()
-	r.Use(accesslog.Middleware())
+	r.Use(httpaccesslog.Middleware())
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		accesslog.SetLogData(r.Context(), []byte(`{"foo": "bar"}`))
 		w.Write([]byte("pong"))
@@ -36,7 +37,7 @@ After, you can see some logs in your terminal like below.
 {"remoteAddr":"[::1]:52151","path":"/ping","method":"GET","status":200,"ua":"curl/7.64.1","data":"{\"foo\": \"bar\"}","time":"2021-12-07T13:36:21.256115Z","dur(ms)":0.02387}
 ```
 
-Check out the [example](example) for more!
+Check out the [examples](examples) for more!
 
 ## Log writer
 In this library, the follwing log writers are available.

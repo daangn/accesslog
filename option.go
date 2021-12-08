@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"os"
+
+	"github.com/daangn/accesslog/http"
 )
 
 type config struct {
@@ -14,7 +16,7 @@ type config struct {
 
 func defaults(cfg *config) {
 	cfg.writer = os.Stdout
-	cfg.httpLogFormatter = &DefaultHTTPLogFormatter{}
+	cfg.httpLogFormatter = &http.DefaultHTTPLogFormatter{}
 }
 
 // Option represents an option that can be passed to middleware, interceptor or logger.

@@ -1,4 +1,4 @@
-# example
+# s3athena
 This example is more specific example for production use case. In this scenario, We want to permanently store the access logs of our application. The access logs should be searchable when needed. We also need to be able to query for certain condition against our access logs.
 
 ## Architecture overview
