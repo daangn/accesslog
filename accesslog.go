@@ -39,7 +39,7 @@ func (l *Logger) Write(le LogEntry, t time.Time) {
 	l.Log().
 		EmbedObject(le).
 		Time("time", t).
-		Dur("dur(ms)", time.Since(t)).
+		Dur("elapsed(ms)", time.Since(t)).
 		Send()
 }
 

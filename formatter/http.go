@@ -2,6 +2,7 @@ package formatter
 
 import (
 	"net/http"
+	"strconv"
 
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog"
@@ -35,17 +36,14 @@ func (le *DefaultHTTPLogEntry) Add(f func(e *zerolog.Event)) {
 
 // MarshalZerologObject implements zerolog.LogObjectMarshaler.
 func (le *DefaultHTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("remoteAddr", le.r.RemoteAddr).
+	e.Str("protocol", "http").
 		Str("path", le.r.URL.Path).
 		Str("method", le.r.Method).
-		Int("status", le.ww.Status()).
+		Str("status", strconv.Itoa(le.ww.Status())).
 		Str("ua", le.r.UserAgent())
 
 	if val := le.r.Header.Get("authority"); val != "" {
 		e.Str("authority", val)
-	}
-	if val := le.r.Header.Get("X-Forwarded-For"); val != "" {
-		e.Str("X-Forwarded-For", val)
 	}
 	if val := le.r.Header.Get("X-Envoy-External-Address"); val != "" {
 		e.Str("X-Envoy-External-Address", val)
