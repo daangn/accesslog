@@ -17,8 +17,8 @@ const (
 // FluentLogWriter is the log writer that implements io.Writer.
 // It writes a log by Fluent Forwarder.
 type FluentLogWriter struct {
-	tag    string
-	logger *fluent.Fluent
+	tag       string
+	forwarder *fluent.Fluent
 }
 
 // NewFluentLogWriter creates a new FluentLogWriter.
@@ -35,15 +35,20 @@ func NewFluentLogWriter(tag, host string, port int) (*FluentLogWriter, error) {
 		return nil, fmt.Errorf("new fluent log writer: %w", err)
 	}
 
+	return NewFluentLogWriterFromForwarder(tag, f), nil
+}
+
+// NewFluentLogWriterFromForwarder creates a new FluentLigWriter from Fluent Forwarder.
+func NewFluentLogWriterFromForwarder(tag string, f *fluent.Fluent) *FluentLogWriter {
 	return &FluentLogWriter{
-		tag:    tag,
-		logger: f,
-	}, nil
+		tag:       tag,
+		forwarder: f,
+	}
 }
 
 // Close closes underlying connections with the Fluent daemon.
 func (f *FluentLogWriter) Close() error {
-	if err := f.logger.Close(); err != nil {
+	if err := f.forwarder.Close(); err != nil {
 		return fmt.Errorf("close fluent log writer: %w", err)
 	}
 	return nil
@@ -56,7 +61,7 @@ func (f *FluentLogWriter) Write(p []byte) (n int, err error) {
 		return 0, fmt.Errorf("fluent logger write: %w", err)
 	}
 
-	if err := f.logger.Post(f.tag, m); err != nil {
+	if err := f.forwarder.Post(f.tag, m); err != nil {
 		return 0, fmt.Errorf("fluent logger write: %w", err)
 	}
 
