@@ -1,8 +1,6 @@
 package http
 
 import (
-	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -19,7 +17,7 @@ func Middleware(opts ...accesslog.Option) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ww := chi_middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-			entry := logger.HttpLogFormatter.NewLogEntry(r, ww, logger.UserGetter)
+			entry := logger.HttpLogFormatter.NewLogEntry(r, ww)
 
 			t := time.Now().UTC()
 			defer func() {
@@ -35,29 +33,27 @@ func Middleware(opts ...accesslog.Option) func(next http.Handler) http.Handler {
 type DefaultHTTPLogFormatter struct{}
 
 // NewLogEntry creates a new LogEntry.
-func (f *DefaultHTTPLogFormatter) NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter, userGetter accesslog.UserGetter) accesslog.LogEntry {
-	return &HTTPLogEntry{
-		r:          r,
-		ww:         ww,
-		userGetter: userGetter,
+func (f *DefaultHTTPLogFormatter) NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter) accesslog.LogEntry {
+	return &LogEntry{
+		r:            r,
+		ww:           ww,
+		addExtraFunc: []func(e *zerolog.Event){},
 	}
 }
 
-// HTTPLogEntry is the log entry for HTTP request.
-type HTTPLogEntry struct {
-	r          *http.Request
-	ww         chi_middleware.WrapResponseWriter
-	userGetter accesslog.UserGetter
-	data       json.RawMessage
+// LogEntry is the log entry for HTTP request.
+type LogEntry struct {
+	r            *http.Request
+	ww           chi_middleware.WrapResponseWriter
+	addExtraFunc []func(e *zerolog.Event)
 }
 
-// SetData sets data field of the HTTPLogEntry.
-func (le *HTTPLogEntry) SetData(data json.RawMessage) {
-	le.data = data
+func (le *LogEntry) Add(f func(e *zerolog.Event)) {
+	le.addExtraFunc = append(le.addExtraFunc, f)
 }
 
 // MarshalZerologObject implements zerolog.LogObjectMarshaler.
-func (le *HTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
+func (le *LogEntry) MarshalZerologObject(e *zerolog.Event) {
 	e.Str("remoteAddr", le.r.RemoteAddr).
 		Str("path", le.r.URL.Path).
 		Str("method", le.r.Method).
@@ -81,21 +77,14 @@ func (le *HTTPLogEntry) MarshalZerologObject(e *zerolog.Event) {
 		e.Str("qs", le.r.URL.RawQuery)
 	}
 
-	if le.userGetter != nil {
-		userID := le.userGetter.GetUserID(le.r.Context())
-		if userID != 0 {
-			e.Int64("user", userID)
-		}
-	}
-
-	if len(le.data) != 0 && json.Valid(le.data) {
-		e.Str("data", string(le.data))
+	for _, f := range le.addExtraFunc {
+		f(e)
 	}
 }
 
 // RequestWithLogEntry returns request that has a context with LogEntry.
-func RequestWithLogEntry(r *http.Request, entry accesslog.LogEntry) *http.Request {
-	r = r.WithContext(context.WithValue(r.Context(), accesslog.LogEntryCtxKey, entry))
+func RequestWithLogEntry(r *http.Request, le accesslog.LogEntry) *http.Request {
+	r = r.WithContext(accesslog.SetLogEntry(r.Context(), le))
 
 	return r
 }

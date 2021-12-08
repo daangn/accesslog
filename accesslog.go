@@ -2,7 +2,6 @@ package accesslog
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -18,7 +17,6 @@ func init() {
 type Logger struct {
 	zerolog.Logger
 
-	UserGetter       UserGetter
 	HttpLogFormatter HTTPLogFormatter
 }
 
@@ -32,7 +30,6 @@ func NewLogger(opts ...Option) *Logger {
 
 	return &Logger{
 		Logger:           zerolog.New(cfg.writer),
-		UserGetter:       cfg.userGetter,
 		HttpLogFormatter: cfg.httpLogFormatter,
 	}
 }
@@ -48,28 +45,27 @@ func (l *Logger) Write(le LogEntry, t time.Time) {
 
 // HTTPLogFormatter is the interface for the NewLogEntry method.
 type HTTPLogFormatter interface {
-	NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter, userGetter UserGetter) LogEntry
-}
-
-// LogEntry is the interface for each log entry. It embeds zerolog.LogObjectMarshaler.
-type LogEntry interface {
-	zerolog.LogObjectMarshaler
-
-	SetData(data json.RawMessage)
+	NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter) LogEntry
 }
 
 // LogEntryCtxKey is the context key for LogEntry.
 var LogEntryCtxKey = struct{}{}
 
-// SetLogData sets log data in LogEntry. the LogEntry is in context value.
-func SetLogData(ctx context.Context, data json.RawMessage) context.Context {
-	if len(data) == 0 {
-		return ctx
-	}
+// LogEntry is the interface for each log entry. It embeds zerolog.LogObjectMarshaler.
+type LogEntry interface {
+	zerolog.LogObjectMarshaler
 
-	if entry, ok := ctx.Value(LogEntryCtxKey).(LogEntry); ok {
-		entry.SetData(data)
-	}
+	Add(func(e *zerolog.Event))
+}
 
-	return ctx
+// GetLogEntry gets LogEntry in context.
+func GetLogEntry(ctx context.Context) LogEntry {
+	if le, ok := ctx.Value(LogEntryCtxKey).(LogEntry); ok {
+		return le
+	}
+	return nil
+}
+
+func SetLogEntry(ctx context.Context, le LogEntry) context.Context {
+	return context.WithValue(ctx, LogEntryCtxKey, le)
 }

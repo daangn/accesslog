@@ -8,27 +8,33 @@ GOPRIVATE=github.com/daangn go get -u github.com/daangn/accesslog
 
 ## Getting started
 Here's a basic usage of logging:
+
 ```go
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/daangn/accesslog"
 	httpaccesslog "github.com/daangn/accesslog/http"
+	"github.com/go-chi/chi"
+	"github.com/rs/zerolog"
 )
 
 func main() {
 	r := chi.NewRouter()
 	r.Use(httpaccesslog.Middleware())
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		accesslog.SetLogData(r.Context(), []byte(`{"foo": "bar"}`))
+		accesslog.GetLogEntry(r.Context()).Add(func(e *zerolog.Event) {
+			e.Bytes("data", json.RawMessage(`{"foo": "bar"}`))
+		})
 		w.Write([]byte("pong"))
 	})
 
 	http.ListenAndServe(":3000", r)
 }
+
 ```
 
 go run above code in your terminal, and then execute `curl localhost:3000/ping` in another terminal.
