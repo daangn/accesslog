@@ -17,14 +17,17 @@ import (
 	"net/http"
 
 	"github.com/daangn/accesslog"
-	httpaccesslog "github.com/daangn/accesslog/http"
+	"github.com/daangn/accesslog/formatter"
+	"github.com/daangn/accesslog/middleware"
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
 )
 
 func main() {
 	r := chi.NewRouter()
-	r.Use(httpaccesslog.Middleware())
+	r.Use(middleware.AccessLog(
+		accesslog.WithHTTPLogFormatter(&formatter.DefaultHTTPLogFormatter{}),
+	))
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		accesslog.GetLogEntry(r.Context()).Add(func(e *zerolog.Event) {
 			e.Bytes("data", json.RawMessage(`{"foo": "bar"}`))
@@ -34,7 +37,6 @@ func main() {
 
 	http.ListenAndServe(":3000", r)
 }
-
 ```
 
 go run above code in your terminal, and then execute `curl localhost:3000/ping` in another terminal.

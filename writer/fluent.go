@@ -1,4 +1,4 @@
-package logwriter
+package writer
 
 import (
 	"encoding/json"

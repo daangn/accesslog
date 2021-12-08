@@ -8,13 +8,14 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/daangn/accesslog"
-	httpaccesslog "github.com/daangn/accesslog/http"
+	"github.com/daangn/accesslog/formatter"
+	"github.com/daangn/accesslog/middleware"
 )
 
 func main() {
 	r := chi.NewRouter()
-	r.Use(httpaccesslog.Middleware(
-		accesslog.WithHTTPLogFormatter(&httpaccesslog.DefaultHTTPLogFormatter{}),
+	r.Use(middleware.AccessLog(
+		accesslog.WithHTTPLogFormatter(&formatter.DefaultHTTPLogFormatter{}),
 	))
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		accesslog.GetLogEntry(r.Context()).Add(func(e *zerolog.Event) {

@@ -66,6 +66,7 @@ func GetLogEntry(ctx context.Context) LogEntry {
 	return nil
 }
 
+// SetLogEntry sets LogEntry in context.
 func SetLogEntry(ctx context.Context, le LogEntry) context.Context {
 	return context.WithValue(ctx, LogEntryCtxKey, le)
 }
