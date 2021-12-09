@@ -7,10 +7,9 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
-
-	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 
 	"github.com/daangn/accesslog"
 	"github.com/daangn/accesslog/middleware"
