@@ -40,6 +40,7 @@ func main() {
 		grpc.UnaryInterceptor(
 			middleware.UnaryServerInterceptor(accesslog.NewGRPCLogger(os.Stdout, accesslog.NewDefaultGRPCLogFormatter(
 				accesslog.WithRequestField(),
+				accesslog.WithResponseField(),
 				accesslog.WithMetadataField(),
 				accesslog.WithIgnoredMetadata("content-type"),
 			))),

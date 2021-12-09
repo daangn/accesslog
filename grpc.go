@@ -35,13 +35,13 @@ func NewGRPCLogger(w io.Writer, f GRPCLogFormatter) *GRPCLogger {
 }
 
 // NewLogEntry returns a New LogEntry.
-func (l *GRPCLogger) NewLogEntry(ctx context.Context, req, res interface{}, info *grpc.UnaryServerInfo, err error) LogEntry {
+func (l *GRPCLogger) NewLogEntry(ctx context.Context, req interface{}, res *interface{}, info *grpc.UnaryServerInfo, err *error) LogEntry {
 	return l.f.NewLogEntry(l.l, ctx, req, res, info, err)
 }
 
 // GRPCLogFormatter is the interface for NewLogEntry method.
 type GRPCLogFormatter interface {
-	NewLogEntry(l *zerolog.Logger, ctx context.Context, req, res interface{}, info *grpc.UnaryServerInfo, err error) LogEntry
+	NewLogEntry(l *zerolog.Logger, ctx context.Context, req interface{}, res *interface{}, info *grpc.UnaryServerInfo, err *error) LogEntry
 }
 
 type grpcConfig struct {
@@ -49,6 +49,7 @@ type grpcConfig struct {
 	withMetadataField bool
 	ignoredMetadata   map[string]struct{}
 	withRequestField  bool
+	withResponseField bool
 }
 
 type grpcOption func(cfg *grpcConfig)
@@ -91,6 +92,13 @@ func WithRequestField() grpcOption {
 	}
 }
 
+// WithResponseField specifies whether gRPC responses should be added to spans as tags.
+func WithResponseField() grpcOption {
+	return func(cfg *grpcConfig) {
+		cfg.withResponseField = true
+	}
+}
+
 // DefaultGRPCLogFormatter is default GRPCLogFormatter.
 type DefaultGRPCLogFormatter struct {
 	cfg *grpcConfig
@@ -107,7 +115,7 @@ func NewDefaultGRPCLogFormatter(opts ...grpcOption) *DefaultGRPCLogFormatter {
 }
 
 // NewLogEntry returns a New LogEntry formatted in DefaultGRPCLogFormatter.
-func (f *DefaultGRPCLogFormatter) NewLogEntry(l *zerolog.Logger, ctx context.Context, req, res interface{}, info *grpc.UnaryServerInfo, err error) LogEntry {
+func (f *DefaultGRPCLogFormatter) NewLogEntry(l *zerolog.Logger, ctx context.Context, req interface{}, res *interface{}, info *grpc.UnaryServerInfo, err *error) LogEntry {
 	return &DefaultGRPCLogEntry{
 		l:    l,
 		cfg:  f.cfg,
@@ -126,10 +134,10 @@ type DefaultGRPCLogEntry struct {
 	cfg  *grpcConfig
 	ctx  context.Context
 	req  interface{}
-	res  interface{}
+	res  *interface{}
 	info *grpc.UnaryServerInfo
 	add  []func(e *zerolog.Event)
-	err  error
+	err  *error
 }
 
 // Add adds function for adding fields to log event.
@@ -146,7 +154,7 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 	e := le.l.Log().
 		Str("protocol", "grpc").
 		Str("method", le.info.FullMethod).
-		Str("status", status.Code(le.err).String()).
+		Str("status", status.Code(*le.err).String()).
 		Str("time", t.UTC().Format(time.RFC3339Nano)).
 		Dur("elapsed(ms)", time.Since(t))
 
@@ -174,6 +182,14 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 		if p, ok := le.req.(proto.Message); ok {
 			if s, err := m.MarshalToString(p); err == nil {
 				e.Str("req", s)
+			}
+		}
+	}
+	if le.cfg.withResponseField {
+		var m jsonpb.Marshaler
+		if p, ok := (*le.res).(proto.Message); ok {
+			if s, err := m.MarshalToString(p); err == nil {
+				e.Str("res", s)
 			}
 		}
 	}

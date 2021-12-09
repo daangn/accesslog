@@ -12,7 +12,7 @@ import (
 // UnaryServerInterceptor will write access log to the given grpc server.
 func UnaryServerInterceptor(logger *accesslog.GRPCLogger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (res interface{}, err error) {
-		le := logger.NewLogEntry(ctx, req, res, info, err)
+		le := logger.NewLogEntry(ctx, req, &res, info, &err)
 
 		t := time.Now().UTC()
 		defer func() {
@@ -20,6 +20,7 @@ func UnaryServerInterceptor(logger *accesslog.GRPCLogger) grpc.UnaryServerInterc
 		}()
 
 		res, err = handler(accesslog.SetLogEntry(ctx, le), req)
+
 		return
 	}
 }
