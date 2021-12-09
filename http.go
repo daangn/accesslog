@@ -48,7 +48,7 @@ type httpConfig struct {
 
 type httpOption func(cfg *httpConfig)
 
-// WithIgnoredPaths specifies methods and paths to be captured by the logger.
+// WithIgnoredPaths specifies methods and paths to be ignored by the logger.
 // This only works when using chi.Router.
 func WithIgnoredPaths(ips map[string][]string) httpOption {
 	return func(cfg *httpConfig) {
