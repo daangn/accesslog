@@ -55,7 +55,7 @@ type grpcConfig struct {
 type grpcOption func(cfg *grpcConfig)
 
 // WithIgnoredMethods specifies full methods to be ignored by the server side interceptor.
-// When an incoming request's full method is in ms, no spans will be created.
+// When an incoming request's full method is in ms, the request will not be captured.
 func WithIgnoredMethods(ms ...string) grpcOption {
 	ims := make(map[string]struct{}, len(ms))
 	for _, e := range ms {
@@ -66,7 +66,7 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 	}
 }
 
-// WithMetadataField specifies whether gRPC metadata should be added to spans as tags.
+// WithMetadataField specifies whether gRPC metadata should be captured by the logger.
 func WithMetadataField() grpcOption {
 	return func(cfg *grpcConfig) {
 		cfg.withMetadataField = true
@@ -85,14 +85,14 @@ func WithIgnoredMetadata(ms ...string) grpcOption {
 	}
 }
 
-// WithRequestField specifies whether gRPC requests should be added to spans as tags.
+// WithRequestField specifies whether gRPC requests should be captured by the logger.
 func WithRequestField() grpcOption {
 	return func(cfg *grpcConfig) {
 		cfg.withRequestField = true
 	}
 }
 
-// WithResponseField specifies whether gRPC responses should be added to spans as tags.
+// WithResponseField specifies whether gRPC responses should be captured by the logger.
 func WithResponseField() grpcOption {
 	return func(cfg *grpcConfig) {
 		cfg.withResponseField = true
