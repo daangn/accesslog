@@ -1,3 +1,6 @@
+/*
+Package accesslog contains a library access logging.
+*/
 package accesslog
 
 import (
