@@ -4,6 +4,7 @@ services:
   fluent-bit:
     image: public.ecr.aws/aws-observability/aws-for-fluent-bit:latest
     ports:
+      - 2020:2020
       - 24224:24224
     environment:
       AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID}'
