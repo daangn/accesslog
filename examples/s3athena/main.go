@@ -8,24 +8,18 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/daangn/accesslog"
-	"github.com/daangn/accesslog/formatter"
 	"github.com/daangn/accesslog/middleware"
-	"github.com/daangn/accesslog/writer"
 )
 
 func main() {
-	// Create a new Fluent log writer. It implements io.Writer.
-	w, err := writer.NewFluentLogWriter("alpha", "0.0.0.0", 24224)
+	w, err := accesslog.NewFluentLogWriter("alpha", "0.0.0.0", 24224)
 	if err != nil {
 		panic(err)
 	}
 	defer w.Close()
 
 	r := chi.NewRouter()
-	r.Use(middleware.AccessLog(
-		accesslog.WithWriter(w),
-		accesslog.WithHTTPLogFormatter(&formatter.DefaultHTTPLogFormatter{}),
-	))
+	r.Use(middleware.AccessLog(accesslog.NewHTTPLogger(w, &accesslog.DefaultHTTPLogFormatter{})))
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		accesslog.GetLogEntry(r.Context()).Add(func(e *zerolog.Event) {
 			e.Bytes("data", json.RawMessage(`{"foo": "bar"}`))

@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// DefaultHTTPLogger is default HTTP Logger.
 var DefaultHTTPLogger *HTTPLogger
 
 func init() {
@@ -22,11 +23,13 @@ func init() {
 	}
 }
 
+// HTTPLogger is logger for HTTP access logging.
 type HTTPLogger struct {
 	l *zerolog.Logger
 	f HTTPLogFormatter
 }
 
+// NewHTTPLogger returns a new HTTPLogger.
 func NewHTTPLogger(w io.Writer, f HTTPLogFormatter) *HTTPLogger {
 	l := zerolog.New(w)
 	return &HTTPLogger{
@@ -35,16 +38,20 @@ func NewHTTPLogger(w io.Writer, f HTTPLogFormatter) *HTTPLogger {
 	}
 }
 
+// NewLogEntry returns a New LogEntry.
 func (l *HTTPLogger) NewLogEntry(r *http.Request, ww middleware.WrapResponseWriter) LogEntry {
 	return l.f.NewLogEntry(l.l, r, ww)
 }
 
+// HTTPLogFormatter is the interface for NewLogEntry method.
 type HTTPLogFormatter interface {
 	NewLogEntry(l *zerolog.Logger, r *http.Request, ww middleware.WrapResponseWriter) LogEntry
 }
 
+// DefaultHTTPLogFormatter is default HTTPLogFormatter.
 type DefaultHTTPLogFormatter struct{}
 
+// NewLogEntry returns a New LogEntry formatted in DefaultHTTPLogFormatter.
 func (f *DefaultHTTPLogFormatter) NewLogEntry(l *zerolog.Logger, r *http.Request, ww middleware.WrapResponseWriter) LogEntry {
 	return &DefaultHTTPLogEntry{
 		l:   l,
@@ -54,6 +61,7 @@ func (f *DefaultHTTPLogFormatter) NewLogEntry(l *zerolog.Logger, r *http.Request
 	}
 }
 
+// DefaultHTTPLogEntry is the LogEntry formatted in DefaultHTTPLogFormatter.
 type DefaultHTTPLogEntry struct {
 	l   *zerolog.Logger
 	r   *http.Request
@@ -61,10 +69,12 @@ type DefaultHTTPLogEntry struct {
 	add []func(e *zerolog.Event)
 }
 
+// Add adds function for adding fields to log event.
 func (le *DefaultHTTPLogEntry) Add(f func(e *zerolog.Event)) {
 	le.add = append(le.add, f)
 }
 
+// Write writes a log.
 func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 	e := le.l.Log().
 		Str("protocol", "http").

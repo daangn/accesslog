@@ -10,17 +10,15 @@ import (
 )
 
 // AccessLog returns middleware that will log incoming requests.
-func AccessLog(opts ...accesslog.Option) func(next http.Handler) http.Handler {
-	logger := accesslog.NewLogger(opts...)
-
+func AccessLog(logger *accesslog.HTTPLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ww := chi_middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-			entry := logger.HttpLogFormatter.NewLogEntry(r, ww)
+			entry := logger.NewLogEntry(r, ww)
 
 			t := time.Now().UTC()
 			defer func() {
-				logger.Write(entry, t)
+				entry.Write(t)
 			}()
 
 			next.ServeHTTP(ww, RequestWithLogEntry(r, entry))
@@ -28,7 +26,7 @@ func AccessLog(opts ...accesslog.Option) func(next http.Handler) http.Handler {
 	}
 }
 
-// RequestWithLogEntry returns request that has a context with DefaultHTTPLogEntry.
+// RequestWithLogEntry returns request that has a context with accesslog.HTTPLogEntry.
 func RequestWithLogEntry(r *http.Request, le accesslog.LogEntry) *http.Request {
 	r = r.WithContext(accesslog.SetLogEntry(r.Context(), le))
 

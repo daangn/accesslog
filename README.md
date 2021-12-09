@@ -17,7 +17,6 @@ import (
 	"net/http"
 
 	"github.com/daangn/accesslog"
-	"github.com/daangn/accesslog/formatter"
 	"github.com/daangn/accesslog/middleware"
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
@@ -25,9 +24,7 @@ import (
 
 func main() {
 	r := chi.NewRouter()
-	r.Use(middleware.AccessLog(
-		accesslog.WithHTTPLogFormatter(&formatter.DefaultHTTPLogFormatter{}),
-	))
+	r.Use(middleware.AccessLog(accesslog.DefaultHTTPLogger))
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		accesslog.GetLogEntry(r.Context()).Add(func(e *zerolog.Event) {
 			e.Bytes("data", json.RawMessage(`{"foo": "bar"}`))
@@ -37,12 +34,13 @@ func main() {
 
 	http.ListenAndServe(":3000", r)
 }
+
 ```
 
 go run above code in your terminal, and then execute `curl localhost:3000/ping` in another terminal.
 After, you can see some logs in your terminal like below.
 ```
-{"remoteAddr":"[::1]:52151","path":"/ping","method":"GET","status":200,"ua":"curl/7.64.1","data":"{\"foo\": \"bar\"}","time":"2021-12-07T13:36:21.256115Z","dur(ms)":0.02387}
+{"protocol":"http","path":"/ping","status":"200","ua":"curl/7.64.1","time":"2021-12-09T02:39:46.026696Z","elapsed(ms)":0.033,"data":"{\"foo\": \"bar\"}"}
 ```
 
 Check out the [examples](examples) for more!
