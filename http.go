@@ -13,15 +13,7 @@ import (
 )
 
 // DefaultHTTPLogger is default HTTP Logger.
-var DefaultHTTPLogger *HTTPLogger
-
-func init() {
-	z := zerolog.New(os.Stdout)
-	DefaultHTTPLogger = &HTTPLogger{
-		l: &z,
-		f: &DefaultHTTPLogFormatter{},
-	}
-}
+var DefaultHTTPLogger = NewHTTPLogger(os.Stdout, &DefaultHTTPLogFormatter{})
 
 // HTTPLogger is logger for HTTP access logging.
 type HTTPLogger struct {
