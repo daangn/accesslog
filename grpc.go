@@ -45,11 +45,10 @@ type GRPCLogFormatter interface {
 }
 
 type grpcConfig struct {
-	ignoredMethods    map[string]struct{}
-	withMetadataField bool
-	ignoredMetadata   map[string]struct{}
-	withRequestField  bool
-	withResponseField bool
+	ignoredMethods map[string]struct{}
+	metadata       map[string]struct{}
+	withRequest    bool
+	withResponse   bool
 }
 
 type grpcOption func(cfg *grpcConfig)
@@ -66,36 +65,28 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 	}
 }
 
-// WithMetadataField specifies whether gRPC metadata should be captured by the logger.
-func WithMetadataField() grpcOption {
-	return func(cfg *grpcConfig) {
-		cfg.withMetadataField = true
-	}
-}
-
-// WithIgnoredMetadata specifies keys to be ignored while tracing the metadata. Must be used
-// in conjunction with WithMetadataField.
-func WithIgnoredMetadata(ms ...string) grpcOption {
-	ims := make(map[string]struct{}, len(ms))
+// WithMetadata specifies headers to be captured by the logger.
+func WithMetadata(ms ...string) grpcOption {
+	wm := make(map[string]struct{}, len(ms))
 	for _, e := range ms {
-		ims[e] = struct{}{}
+		wm[e] = struct{}{}
 	}
 	return func(cfg *grpcConfig) {
-		cfg.ignoredMetadata = ims
-	}
-}
-
-// WithRequestField specifies whether gRPC requests should be captured by the logger.
-func WithRequestField() grpcOption {
-	return func(cfg *grpcConfig) {
-		cfg.withRequestField = true
+		cfg.metadata = wm
 	}
 }
 
-// WithResponseField specifies whether gRPC responses should be captured by the logger.
-func WithResponseField() grpcOption {
+// WithRequest specifies whether gRPC requests should be captured by the logger.
+func WithRequest() grpcOption {
 	return func(cfg *grpcConfig) {
-		cfg.withResponseField = true
+		cfg.withResponse = true
+	}
+}
+
+// WithResponse specifies whether gRPC responses should be captured by the logger.
+func WithResponse() grpcOption {
+	return func(cfg *grpcConfig) {
+		cfg.withRequest = true
 	}
 }
 
@@ -162,22 +153,20 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 		e.Str("peer", p.Addr.String())
 	}
 
-	if le.cfg.withMetadataField {
-		md, _ := metadata.FromIncomingContext(le.ctx)
-		ms := make(map[string][]string, len(md))
-		for k, v := range md {
-			if _, ok := le.cfg.ignoredMetadata[k]; !ok {
-				ms[k] = v
-			}
-		}
-		if len(ms) > 0 {
-			b, err := json.Marshal(ms)
-			if err == nil {
-				e.Str("metadata", string(b))
+	if wm := le.cfg.metadata; len(wm) != 0 {
+		if md, ok := metadata.FromIncomingContext(le.ctx); ok {
+			for k := range wm {
+				if ms := md.Get(k); len(ms) != 0 {
+					b, err := json.Marshal(ms)
+					if err == nil {
+						e.Str(k, string(b))
+					}
+				}
 			}
 		}
 	}
-	if le.cfg.withRequestField {
+
+	if le.cfg.withResponse {
 		var m jsonpb.Marshaler
 		if p, ok := le.req.(proto.Message); ok {
 			if s, err := m.MarshalToString(p); err == nil {
@@ -185,7 +174,7 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 			}
 		}
 	}
-	if le.cfg.withResponseField {
+	if le.cfg.withRequest {
 		var m jsonpb.Marshaler
 		if p, ok := (*le.res).(proto.Message); ok {
 			if s, err := m.MarshalToString(p); err == nil {
