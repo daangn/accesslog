@@ -127,12 +127,16 @@ type DefaultGRPCLogEntry struct {
 	req  interface{}
 	res  *interface{}
 	info *grpc.UnaryServerInfo
-	add  []func(e *zerolog.Event)
 	err  *error
+	add  []func(e *zerolog.Event)
 }
 
 // Add adds function for adding fields to log event.
 func (le *DefaultGRPCLogEntry) Add(f func(e *zerolog.Event)) {
+	if le == nil {
+		return
+	}
+
 	le.add = append(le.add, f)
 }
 
