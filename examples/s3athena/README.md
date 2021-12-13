@@ -18,6 +18,8 @@ A brief description of the resources illustrated in the diagram above.
 - AWS identity that has the following permissions
   - `s3:PutObject`
   - `glue:CreateDatabase`
+  - `glue:StartCrawler`
+  - `glue:CreateCrawler`
 - AWS IAM Role that must provide permissions similar to the AWS managed policy, AWSGlueServiceRole, plus access to your data stores.
 
 ## Step by step tutorial
