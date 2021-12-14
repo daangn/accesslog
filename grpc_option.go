@@ -16,10 +16,9 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 	}
 }
 
-// WithMetadata specifies headers to be captured by the logger.
-// The key of the ms is the name of the metadata.
-// And the value is the name to set in the log field.
-// If the value is omitted, the name of the metadata is used as it is.
+// WithMetadata specifies metadata to be captured by the logger.
+// If you want alias for logging, write like metadata:alias.
+// e.g. "content-type:ct", this metadata will be logged like "ct": "[\"application/grpc\"]"
 func WithMetadata(ms ...string) grpcOption {
 	wms := metadataMap(ms)
 	return func(cfg *grpcConfig) {
@@ -31,12 +30,20 @@ func metadataMap(ms []string) map[string]string {
 	mm := make(map[string]string, len(ms))
 	for _, m := range ms {
 		i := strings.Index(m, ":")
-		switch {
-		case i == -1:
+		if i == -1 {
 			mm[m] = ""
-		case i < len(m)-1:
+		} else if i == 0 {
+			li := strings.LastIndex(m, ":")
+			if li == 0 {
+				mm[m] = ""
+			} else if li < len(m)-1 {
+				mm[m[:li]] = m[li+1:]
+			} else {
+				mm[m[:li]] = ""
+			}
+		} else if i < len(m)-1 {
 			mm[m[:i]] = m[i+1:]
-		default:
+		} else {
 			mm[m[:i]] = ""
 		}
 	}

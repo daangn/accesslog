@@ -12,27 +12,45 @@ func Test_metadataMap(t *testing.T) {
 		want map[string]string
 	}{
 		{
-			name: "all items are just header names",
-			ms:   []string{"user-agent", "authority"},
+			name: "just metadata",
+			ms:   []string{"user-agent"},
 			want: map[string]string{
 				"user-agent": "",
-				"authority":  "",
 			},
 		},
 		{
-			name: "some items have alias",
-			ms:   []string{"user-agent:ua", "authority"},
+			name: "metadata with alias",
+			ms:   []string{"user-agent:ua"},
 			want: map[string]string{
 				"user-agent": "ua",
-				"authority":  "",
 			},
 		},
 		{
-			name: "invalid case",
-			ms:   []string{"user-agent:", "authority"},
+			name: "metadata that starts with :",
+			ms:   []string{":authority"},
+			want: map[string]string{
+				":authority": "",
+			},
+		},
+		{
+			name: "metadata with alias that starts with :",
+			ms:   []string{":authority:a"},
+			want: map[string]string{
+				":authority": "a",
+			},
+		},
+		{
+			name: "empty alias",
+			ms:   []string{"user-agent:"},
 			want: map[string]string{
 				"user-agent": "",
-				"authority":  "",
+			},
+		},
+		{
+			name: "metadata with empty alias that starts with :",
+			ms:   []string{":authority:"},
+			want: map[string]string{
+				":authority": "",
 			},
 		},
 	}
