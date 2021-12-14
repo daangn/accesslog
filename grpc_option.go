@@ -16,7 +16,7 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 	}
 }
 
-// WithMetadata specifies metadata to be captured by the logger.
+// WithMetadata specifies metadata to be captured by the logger. pseudo-headers in metadata also can be treated.
 // If you want alias for logging, write like metadata:alias.
 // e.g. "content-type:ct", this metadata will be logged like "ct": "[\"application/grpc\"]"
 func WithMetadata(ms ...string) grpcOption {

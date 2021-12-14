@@ -26,20 +26,6 @@ func Test_metadataMap(t *testing.T) {
 			},
 		},
 		{
-			name: "metadata that starts with :",
-			ms:   []string{":authority"},
-			want: map[string]string{
-				":authority": "",
-			},
-		},
-		{
-			name: "metadata with alias that starts with :",
-			ms:   []string{":authority:a"},
-			want: map[string]string{
-				":authority": "a",
-			},
-		},
-		{
 			name: "empty alias",
 			ms:   []string{"user-agent:"},
 			want: map[string]string{
@@ -47,7 +33,21 @@ func Test_metadataMap(t *testing.T) {
 			},
 		},
 		{
-			name: "metadata with empty alias that starts with :",
+			name: "pseudo-header",
+			ms:   []string{":authority"},
+			want: map[string]string{
+				":authority": "",
+			},
+		},
+		{
+			name: "pseudo-header with alias",
+			ms:   []string{":authority:a"},
+			want: map[string]string{
+				":authority": "a",
+			},
+		},
+		{
+			name: "pseudo-header with empty alias",
 			ms:   []string{":authority:"},
 			want: map[string]string{
 				":authority": "",
