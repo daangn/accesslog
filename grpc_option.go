@@ -1,5 +1,7 @@
 package accesslog
 
+import "strings"
+
 type grpcOption func(cfg *grpcConfig)
 
 // WithIgnoredMethods specifies full methods to be ignored by the server side interceptor.
@@ -18,10 +20,27 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 // The key of the ms is the name of the metadata.
 // And the value is the name to set in the log field.
 // If the value is omitted, the name of the metadata is used as it is.
-func WithMetadata(ms map[string]string) grpcOption {
+func WithMetadata(ms ...string) grpcOption {
+	wms := metadataMap(ms)
 	return func(cfg *grpcConfig) {
-		cfg.metadata = ms
+		cfg.metadata = wms
 	}
+}
+
+func metadataMap(ms []string) map[string]string {
+	mm := make(map[string]string, len(ms))
+	for _, m := range ms {
+		i := strings.Index(m, ":")
+		switch {
+		case i == -1:
+			mm[m] = ""
+		case i < len(m)-1:
+			mm[m[:i]] = m[i+1:]
+		default:
+			mm[m[:i]] = ""
+		}
+	}
+	return mm
 }
 
 // WithRequest specifies whether gRPC requests should be captured by the logger.
