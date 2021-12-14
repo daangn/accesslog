@@ -21,7 +21,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.AccessLog(accesslog.NewHTTPLogger(w, &accesslog.DefaultHTTPLogFormatter{})))
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		accesslog.GetLogEntry(r.Context()).Add(func(e *zerolog.Event) {
+		accesslog.AddToLogEntry(r.Context(), func(e *zerolog.Event) {
 			e.Bytes("data", json.RawMessage(`{"foo": "bar"}`))
 		})
 		w.Write([]byte("pong"))
