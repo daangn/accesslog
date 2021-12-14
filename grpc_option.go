@@ -15,13 +15,12 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 }
 
 // WithMetadata specifies headers to be captured by the logger.
-func WithMetadata(ms ...string) grpcOption {
-	wm := make(map[string]struct{}, len(ms))
-	for _, e := range ms {
-		wm[e] = struct{}{}
-	}
+// The key of the ms is the name of the metadata.
+// And the value is the name to set in the log field.
+// If the value is omitted, the name of the metadata is used as it is.
+func WithMetadata(ms map[string]string) grpcOption {
 	return func(cfg *grpcConfig) {
-		cfg.metadata = wm
+		cfg.metadata = ms
 	}
 }
 
