@@ -1,4 +1,4 @@
-package accesslog
+package writer
 
 import (
 	"encoding/json"
