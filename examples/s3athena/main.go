@@ -9,10 +9,11 @@ import (
 
 	"github.com/daangn/accesslog"
 	"github.com/daangn/accesslog/middleware"
+	"github.com/daangn/accesslog/writer"
 )
 
 func main() {
-	w, err := accesslog.NewFluentLogWriter("alpha", "0.0.0.0", 24224)
+	w, err := writer.NewFluentLogWriter("alpha", "0.0.0.0", 24224)
 	if err != nil {
 		panic(err)
 	}
