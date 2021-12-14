@@ -15,7 +15,7 @@ func WithIgnoredPaths(ips map[string][]string) httpOption {
 	}
 }
 
-// WithHeaders specifies headers to be captured by the logger.
+// WithHeaders specifies headers to be captured by the logger. pseudo-headers also can be treated.
 // If you want alias for logging, write like header:alias.
 // e.g. "content-type:ct", this metadata will be logged like "ct": "application/json"
 func WithHeaders(hs ...string) httpOption {
@@ -31,6 +31,15 @@ func headerMap(hs []string) map[string]string {
 		i := strings.Index(h, ":")
 		if i == -1 {
 			hm[h] = ""
+		} else if i == 0 {
+			li := strings.LastIndex(h, ":")
+			if li == 0 {
+				hm[h] = ""
+			} else if li < len(h)-1 {
+				hm[h[:li]] = h[li+1:]
+			} else {
+				hm[h[:li]] = ""
+			}
 		} else if i < len(h)-1 {
 			hm[h[:i]] = h[i+1:]
 		} else {

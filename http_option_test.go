@@ -32,6 +32,27 @@ func Test_headerMap(t *testing.T) {
 				"user-agent": "",
 			},
 		},
+		{
+			name: "pseudo-header",
+			hs:   []string{":authority"},
+			want: map[string]string{
+				":authority": "",
+			},
+		},
+		{
+			name: "pseudo-header with alias",
+			hs:   []string{":authority:a"},
+			want: map[string]string{
+				":authority": "a",
+			},
+		},
+		{
+			name: "pseudo-header with empty alias",
+			hs:   []string{":authority:"},
+			want: map[string]string{
+				":authority": "",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
