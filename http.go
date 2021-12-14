@@ -5,20 +5,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog"
-)
-
-var (
-	trueClientIP          = http.CanonicalHeaderKey("True-Client-IP")
-	xForwardedFor         = http.CanonicalHeaderKey("X-Forwarded-For")
-	xRealIP               = http.CanonicalHeaderKey("X-Real-IP")
-	xEnvoyExternalAddress = http.CanonicalHeaderKey("X-Envoy-External-Address")
 )
 
 // DefaultHTTPLogger is default HTTP Logger.
@@ -53,33 +45,6 @@ type httpConfig struct {
 	ignoredPaths map[string][]string
 	Headers      map[string]string
 	withClientIP bool
-}
-
-type httpOption func(cfg *httpConfig)
-
-// WithIgnoredPaths specifies methods and paths to be ignored by the logger.
-// This only works when using chi.Router.
-func WithIgnoredPaths(ips map[string][]string) httpOption {
-	return func(cfg *httpConfig) {
-		cfg.ignoredPaths = ips
-	}
-}
-
-// WithHeaders specifies headers to be captured by the logger.
-// The key of the hs is the name of the header.
-// And the value is the name to set in the log field.
-// If the value is omitted, the name of the header is used as it is.
-func WithHeaders(hs map[string]string) httpOption {
-	return func(cfg *httpConfig) {
-		cfg.Headers = hs
-	}
-}
-
-// WithClientIP specifies whether client ip should be captured by the logger.
-func WithClientIP() httpOption {
-	return func(cfg *httpConfig) {
-		cfg.withClientIP = true
-	}
 }
 
 // DefaultHTTPLogFormatter is default HTTPLogFormatter.
@@ -159,24 +124,10 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 		}
 	}
 
-	if h := le.r.Header; le.cfg.withClientIP {
-		var ip string
-
-		if tcip := h.Get(trueClientIP); tcip != "" {
-			ip = tcip
-		} else if xrip := h.Get(xRealIP); xrip != "" {
-			ip = xrip
-		} else if xff := h.Get(xForwardedFor); xff != "" {
-			i := strings.Index(xff, ",")
-			if i == -1 {
-				i = len(xff)
-			}
-			ip = xff[:i]
-		} else if xeea := h.Get(xEnvoyExternalAddress); xeea != "" {
-			ip = xeea
+	if le.cfg.withClientIP {
+		if ip := clientIP(le.r.Header); ip != "" {
+			e.Str("client-ip", ip)
 		}
-
-		e.Str("client-ip", ip)
 	}
 
 	for _, f := range le.add {

@@ -52,52 +52,6 @@ type grpcConfig struct {
 	withPeer       bool
 }
 
-type grpcOption func(cfg *grpcConfig)
-
-// WithIgnoredMethods specifies full methods to be ignored by the server side interceptor.
-// When an incoming request's full method is in ms, the request will not be captured.
-func WithIgnoredMethods(ms ...string) grpcOption {
-	ims := make(map[string]struct{}, len(ms))
-	for _, e := range ms {
-		ims[e] = struct{}{}
-	}
-	return func(cfg *grpcConfig) {
-		cfg.ignoredMethods = ims
-	}
-}
-
-// WithMetadata specifies headers to be captured by the logger.
-func WithMetadata(ms ...string) grpcOption {
-	wm := make(map[string]struct{}, len(ms))
-	for _, e := range ms {
-		wm[e] = struct{}{}
-	}
-	return func(cfg *grpcConfig) {
-		cfg.metadata = wm
-	}
-}
-
-// WithRequest specifies whether gRPC requests should be captured by the logger.
-func WithRequest() grpcOption {
-	return func(cfg *grpcConfig) {
-		cfg.withResponse = true
-	}
-}
-
-// WithResponse specifies whether gRPC responses should be captured by the logger.
-func WithResponse() grpcOption {
-	return func(cfg *grpcConfig) {
-		cfg.withRequest = true
-	}
-}
-
-// WithPeer specifies whether peer address should be captured by the logger.
-func WithPeer() grpcOption {
-	return func(cfg *grpcConfig) {
-		cfg.withPeer = true
-	}
-}
-
 // DefaultGRPCLogFormatter is default GRPCLogFormatter.
 type DefaultGRPCLogFormatter struct {
 	cfg *grpcConfig
@@ -161,10 +115,6 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 		Str("time", t.UTC().Format(time.RFC3339Nano)).
 		Dur("elapsed(ms)", time.Since(t))
 
-	if p, ok := peer.FromContext(le.ctx); le.cfg.withPeer && ok {
-		e.Str("peer", p.Addr.String())
-	}
-
 	if wm := le.cfg.metadata; len(wm) != 0 {
 		if md, ok := metadata.FromIncomingContext(le.ctx); ok {
 			for k := range wm {
@@ -178,6 +128,11 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 		}
 	}
 
+	if le.cfg.withPeer {
+		if p, ok := peer.FromContext(le.ctx); ok {
+			e.Str("peer", p.Addr.String())
+		}
+	}
 	if le.cfg.withResponse {
 		var m jsonpb.Marshaler
 		if p, ok := le.req.(proto.Message); ok {
