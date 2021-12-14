@@ -49,6 +49,7 @@ type grpcConfig struct {
 	metadata       map[string]struct{}
 	withRequest    bool
 	withResponse   bool
+	withPeer       bool
 }
 
 type grpcOption func(cfg *grpcConfig)
@@ -87,6 +88,13 @@ func WithRequest() grpcOption {
 func WithResponse() grpcOption {
 	return func(cfg *grpcConfig) {
 		cfg.withRequest = true
+	}
+}
+
+// WithPeer specifies whether peer address should be captured by the logger.
+func WithPeer() grpcOption {
+	return func(cfg *grpcConfig) {
+		cfg.withPeer = true
 	}
 }
 
@@ -153,7 +161,7 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 		Str("time", t.UTC().Format(time.RFC3339Nano)).
 		Dur("elapsed(ms)", time.Since(t))
 
-	if p, ok := peer.FromContext(le.ctx); ok {
+	if p, ok := peer.FromContext(le.ctx); le.cfg.withPeer && ok {
 		e.Str("peer", p.Addr.String())
 	}
 
