@@ -16,13 +16,28 @@ func WithIgnoredPaths(ips map[string][]string) httpOption {
 }
 
 // WithHeaders specifies headers to be captured by the logger.
-// The key of the hs is the name of the header.
-// And the value is the name to set in the log field.
-// If the value is omitted, the name of the header is used as it is.
-func WithHeaders(hs map[string]string) httpOption {
+// If you want alias for logging, write like header:alias.
+// e.g. "content-type:ct", this metadata will be logged like "ct": "application/json"
+func WithHeaders(hs ...string) httpOption {
+	whs := headerMap(hs)
 	return func(cfg *httpConfig) {
-		cfg.Headers = hs
+		cfg.Headers = whs
 	}
+}
+
+func headerMap(hs []string) map[string]string {
+	hm := make(map[string]string, len(hs))
+	for _, h := range hs {
+		i := strings.Index(h, ":")
+		if i == -1 {
+			hm[h] = ""
+		} else if i < len(h)-1 {
+			hm[h[:i]] = h[i+1:]
+		} else {
+			hm[h[:i]] = ""
+		}
+	}
+	return hm
 }
 
 // WithClientIP specifies whether client ip should be captured by the logger.
