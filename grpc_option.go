@@ -1,5 +1,7 @@
 package accesslog
 
+import "strings"
+
 type grpcOption func(cfg *grpcConfig)
 
 // WithIgnoredMethods specifies full methods to be ignored by the server side interceptor.
@@ -14,15 +16,38 @@ func WithIgnoredMethods(ms ...string) grpcOption {
 	}
 }
 
-// WithMetadata specifies headers to be captured by the logger.
+// WithMetadata specifies metadata to be captured by the logger. pseudo-headers in metadata also can be treated.
+// If you want alias for logging, write like metadata:alias.
+// e.g. "content-type:ct", this metadata will be logged like "ct": "[\"application/grpc\"]"
 func WithMetadata(ms ...string) grpcOption {
-	wm := make(map[string]struct{}, len(ms))
-	for _, e := range ms {
-		wm[e] = struct{}{}
-	}
+	wms := metadataMap(ms)
 	return func(cfg *grpcConfig) {
-		cfg.metadata = wm
+		cfg.metadata = wms
 	}
+}
+
+func metadataMap(ms []string) map[string]string {
+	mm := make(map[string]string, len(ms))
+	for _, m := range ms {
+		i := strings.Index(m, ":")
+		if i == -1 {
+			mm[m] = ""
+		} else if i == 0 {
+			li := strings.LastIndex(m, ":")
+			if li == 0 {
+				mm[m] = ""
+			} else if li < len(m)-1 {
+				mm[m[:li]] = m[li+1:]
+			} else {
+				mm[m[:li]] = ""
+			}
+		} else if i < len(m)-1 {
+			mm[m[:i]] = m[i+1:]
+		} else {
+			mm[m[:i]] = ""
+		}
+	}
+	return mm
 }
 
 // WithRequest specifies whether gRPC requests should be captured by the logger.

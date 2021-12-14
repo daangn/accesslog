@@ -46,7 +46,7 @@ type GRPCLogFormatter interface {
 
 type grpcConfig struct {
 	ignoredMethods map[string]struct{}
-	metadata       map[string]struct{}
+	metadata       map[string]string
 	withRequest    bool
 	withResponse   bool
 	withPeer       bool
@@ -117,11 +117,15 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 
 	if wm := le.cfg.metadata; len(wm) != 0 {
 		if md, ok := metadata.FromIncomingContext(le.ctx); ok {
-			for k := range wm {
-				if ms := md.Get(k); len(ms) != 0 {
+			for m, a := range wm {
+				if ms := md.Get(m); len(ms) != 0 {
 					b, err := json.Marshal(ms)
 					if err == nil {
-						e.Str(k, string(b))
+						n := m
+						if a != "" {
+							n = a
+						}
+						e.Str(n, string(b))
 					}
 				}
 			}
