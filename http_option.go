@@ -8,7 +8,7 @@ import (
 type httpOption func(cfg *httpConfig)
 
 // WithIgnoredPaths specifies methods and paths to be ignored by the logger.
-// This only works when using chi.Router.
+// See path.Match method how to set path patterns
 func WithIgnoredPaths(ips map[string][]string) httpOption {
 	return func(cfg *httpConfig) {
 		cfg.ignoredPaths = ips
@@ -21,7 +21,7 @@ func WithIgnoredPaths(ips map[string][]string) httpOption {
 func WithHeaders(hs ...string) httpOption {
 	whs := headerMap(hs)
 	return func(cfg *httpConfig) {
-		cfg.Headers = whs
+		cfg.headers = whs
 	}
 }
 

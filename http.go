@@ -43,7 +43,7 @@ type HTTPLogFormatter interface {
 
 type httpConfig struct {
 	ignoredPaths map[string][]string
-	Headers      map[string]string
+	headers      map[string]string
 	withClientIP bool
 }
 
@@ -113,7 +113,7 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 		e.Str("qs", val)
 	}
 
-	if whs := le.cfg.Headers; len(whs) != 0 {
+	if whs := le.cfg.headers; len(whs) != 0 {
 		for h, a := range whs {
 			if val := le.r.Header.Get(h); val != "" {
 				n := h
