@@ -31,3 +31,11 @@ func GetLogEntry(ctx context.Context) LogEntry {
 func SetLogEntry(ctx context.Context, le LogEntry) context.Context {
 	return context.WithValue(ctx, LogEntryCtxKey, le)
 }
+
+// AddToLogEntry add values to LogEntry that is from context.
+// If LogEntry is nil, it doesn't do anything.
+func AddToLogEntry(ctx context.Context, f func(e *zerolog.Event)) {
+	if le := GetLogEntry(ctx); le != nil {
+		le.Add(f)
+	}
+}
