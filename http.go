@@ -43,7 +43,7 @@ type HTTPLogFormatter interface {
 
 type httpConfig struct {
 	ignoredPaths map[string][]string
-	Headers      map[string]struct{}
+	Headers      map[string]string
 }
 
 type httpOption func(cfg *httpConfig)
@@ -57,13 +57,12 @@ func WithIgnoredPaths(ips map[string][]string) httpOption {
 }
 
 // WithHeaders specifies headers to be captured by the logger.
-func WithHeaders(hs ...string) httpOption {
-	whs := make(map[string]struct{}, len(hs))
-	for _, e := range hs {
-		whs[e] = struct{}{}
-	}
+// The key of the hs is the name of the header.
+// And the value is the name to set in the log field.
+// If the value is omitted, the name of the header is used as it is.
+func WithHeaders(hs map[string]string) httpOption {
 	return func(cfg *httpConfig) {
-		cfg.Headers = whs
+		cfg.Headers = hs
 	}
 }
 
@@ -133,9 +132,13 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 	}
 
 	if whs := le.cfg.Headers; len(whs) != 0 {
-		for h := range whs {
+		for h, a := range whs {
 			if val := le.r.Header.Get(h); val != "" {
-				e.Str(h, val)
+				n := h
+				if a != "" {
+					n = a
+				}
+				e.Str(n, val)
 			}
 		}
 	}
