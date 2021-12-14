@@ -4,10 +4,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
-	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog"
@@ -90,12 +90,13 @@ func (le *DefaultHTTPLogEntry) Add(f func(e *zerolog.Event)) {
 // Write writes a log.
 func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 	if ips := le.cfg.ignoredPaths; len(ips) != 0 {
-		rctx := chi.RouteContext(le.r.Context())
-		for m, ps := range ips {
-			for _, p := range ps {
-				if rctx.Routes.Match(rctx, m, p) {
-					return
-				}
+		for _, ignorePath := range ips[le.r.Method] {
+			p := le.r.URL.Path
+			if p[0] != '/' {
+				p = "/" + p
+			}
+			if m, _ := path.Match(ignorePath, p); m {
+				return
 			}
 		}
 	}
