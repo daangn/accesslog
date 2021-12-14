@@ -5,12 +5,20 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	chi_middleware "github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog"
+)
+
+var (
+	trueClientIP          = http.CanonicalHeaderKey("True-Client-IP")
+	xForwardedFor         = http.CanonicalHeaderKey("X-Forwarded-For")
+	xRealIP               = http.CanonicalHeaderKey("X-Real-IP")
+	xEnvoyExternalAddress = http.CanonicalHeaderKey("X-Envoy-External-Address")
 )
 
 // DefaultHTTPLogger is default HTTP Logger.
@@ -44,6 +52,7 @@ type HTTPLogFormatter interface {
 type httpConfig struct {
 	ignoredPaths map[string][]string
 	Headers      map[string]string
+	withClientIP bool
 }
 
 type httpOption func(cfg *httpConfig)
@@ -63,6 +72,13 @@ func WithIgnoredPaths(ips map[string][]string) httpOption {
 func WithHeaders(hs map[string]string) httpOption {
 	return func(cfg *httpConfig) {
 		cfg.Headers = hs
+	}
+}
+
+// WithClientIP specifies whether client ip should be captured by the logger.
+func WithClientIP() httpOption {
+	return func(cfg *httpConfig) {
+		cfg.withClientIP = true
 	}
 }
 
@@ -141,6 +157,26 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 				e.Str(n, val)
 			}
 		}
+	}
+
+	if h := le.r.Header; le.cfg.withClientIP {
+		var ip string
+
+		if tcip := h.Get(trueClientIP); tcip != "" {
+			ip = tcip
+		} else if xrip := h.Get(xRealIP); xrip != "" {
+			ip = xrip
+		} else if xff := h.Get(xForwardedFor); xff != "" {
+			i := strings.Index(xff, ",")
+			if i == -1 {
+				i = len(xff)
+			}
+			ip = xff[:i]
+		} else if xeea := h.Get(xEnvoyExternalAddress); xeea != "" {
+			ip = xeea
+		}
+
+		e.Str("client-ip", ip)
 	}
 
 	for _, f := range le.add {
