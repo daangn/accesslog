@@ -12,14 +12,14 @@ func Test_headerMap(t *testing.T) {
 		want map[string]string
 	}{
 		{
-			name: "just metadata",
+			name: "just header",
 			hs:   []string{"user-agent"},
 			want: map[string]string{
 				"user-agent": "",
 			},
 		},
 		{
-			name: "metadata with alias",
+			name: "header with alias",
 			hs:   []string{"user-agent:ua"},
 			want: map[string]string{
 				"user-agent": "ua",
