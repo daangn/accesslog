@@ -2,10 +2,12 @@ package accesslog
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -119,6 +121,8 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 
 	if le.cfg.withClientIP {
 		if ip := clientIP(le.r.Header); ip != "" {
+			e.Str("client-ip", ip)
+		} else if ip, _, err := net.SplitHostPort(strings.TrimSpace(le.r.RemoteAddr)); err == nil {
 			e.Str("client-ip", ip)
 		}
 	}
