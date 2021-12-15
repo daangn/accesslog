@@ -89,16 +89,8 @@ func (le *DefaultHTTPLogEntry) Add(f func(e *zerolog.Event)) {
 
 // Write writes a log.
 func (le *DefaultHTTPLogEntry) Write(t time.Time) {
-	if ips := le.cfg.ignoredPaths; len(ips) != 0 {
-		for _, ignorePath := range ips[le.r.Method] {
-			p := le.r.URL.Path
-			if p[0] != '/' {
-				p = "/" + p
-			}
-			if m, _ := path.Match(ignorePath, p); m {
-				return
-			}
-		}
+	if le.isIgnored() {
+		return
 	}
 
 	e := le.l.Log().
@@ -136,4 +128,20 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 	}
 
 	e.Send()
+}
+
+// isIgnored check whether a request path should be ignored
+func (le *DefaultHTTPLogEntry) isIgnored() bool {
+	if ips := le.cfg.ignoredPaths; len(ips) != 0 {
+		for _, ignorePath := range ips[le.r.Method] {
+			p := le.r.URL.Path
+			if p[0] != '/' {
+				p = "/" + p
+			}
+			if m, _ := path.Match(ignorePath, p); m {
+				return true
+			}
+		}
+	}
+	return false
 }
