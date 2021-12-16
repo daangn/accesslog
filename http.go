@@ -2,10 +2,12 @@ package accesslog
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -120,6 +122,8 @@ func (le *DefaultHTTPLogEntry) Write(t time.Time) {
 	if le.cfg.withClientIP {
 		if ip := clientIP(le.r.Header); ip != "" {
 			e.Str("client-ip", ip)
+		} else if ip, _, err := net.SplitHostPort(strings.TrimSpace(le.r.RemoteAddr)); err == nil {
+			e.Str("client-ip", ip)
 		}
 	}
 
@@ -144,4 +148,31 @@ func (le *DefaultHTTPLogEntry) isIgnored() bool {
 		}
 	}
 	return false
+}
+
+var (
+	trueClientIP          = http.CanonicalHeaderKey("True-Client-IP")
+	xForwardedFor         = http.CanonicalHeaderKey("X-Forwarded-For")
+	xRealIP               = http.CanonicalHeaderKey("X-Real-IP")
+	xEnvoyExternalAddress = http.CanonicalHeaderKey("X-Envoy-External-Address")
+)
+
+// clientIP returns the IP of the client.
+// If a header identifying the real IP exists, the value of the header will be used.
+func clientIP(h http.Header) string {
+	if tcip := h.Get(trueClientIP); tcip != "" {
+		return tcip
+	} else if xrip := h.Get(xRealIP); xrip != "" {
+		return xrip
+	} else if xff := h.Get(xForwardedFor); xff != "" {
+		i := strings.Index(xff, ",")
+		if i == -1 {
+			i = len(xff)
+		}
+		return xff[:i]
+	} else if xeea := h.Get(xEnvoyExternalAddress); xeea != "" {
+		return xeea
+	}
+
+	return ""
 }

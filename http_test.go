@@ -26,7 +26,7 @@ func TestDefaultHTTPLogEntry_isIgnored(t *testing.T) {
 				},
 				r: &http.Request{
 					Method: "GET",
-					URL: &url.URL{Path: "/abc"},
+					URL:    &url.URL{Path: "/abc"},
 				},
 			},
 			want: true,
@@ -41,7 +41,7 @@ func TestDefaultHTTPLogEntry_isIgnored(t *testing.T) {
 				},
 				r: &http.Request{
 					Method: "POST",
-					URL: &url.URL{Path: "/abc"},
+					URL:    &url.URL{Path: "/abc"},
 				},
 			},
 			want: false,
@@ -130,6 +130,50 @@ func TestDefaultHTTPLogEntry_isIgnored(t *testing.T) {
 			}
 			if got := le.isIgnored(); got != tt.want {
 				t.Errorf("isIgnored() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_clientIP(t *testing.T) {
+	tests := []struct {
+		name string
+		h    http.Header
+		want string
+	}{
+		{
+			name: "true-client-ip",
+			h: http.Header{
+				"True-Client-Ip": []string{"255.255.255.255"},
+			},
+			want: "255.255.255.255",
+		},
+		{
+			name: "x-forwarded-for",
+			h: http.Header{
+				"X-Forwarded-For": []string{"255.255.255.255"},
+			},
+			want: "255.255.255.255",
+		},
+		{
+			name: "x-real-ip",
+			h: http.Header{
+				"X-Real-Ip": []string{"255.255.255.255"},
+			},
+			want: "255.255.255.255",
+		},
+		{
+			name: "x-envoy-external-address",
+			h: http.Header{
+				"X-Envoy-External-Address": []string{"255.255.255.255"},
+			},
+			want: "255.255.255.255",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := clientIP(tt.h); got != tt.want {
+				t.Errorf("clientIP() = %v, want %v", got, tt.want)
 			}
 		})
 	}

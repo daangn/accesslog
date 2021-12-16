@@ -1,7 +1,6 @@
 package accesslog
 
 import (
-	"net/http"
 	"strings"
 )
 
@@ -54,29 +53,4 @@ func WithClientIP() httpOption {
 	return func(cfg *httpConfig) {
 		cfg.withClientIP = true
 	}
-}
-
-var (
-	trueClientIP          = http.CanonicalHeaderKey("True-Client-IP")
-	xForwardedFor         = http.CanonicalHeaderKey("X-Forwarded-For")
-	xRealIP               = http.CanonicalHeaderKey("X-Real-IP")
-	xEnvoyExternalAddress = http.CanonicalHeaderKey("X-Envoy-External-Address")
-)
-
-func clientIP(h http.Header) string {
-	if tcip := h.Get(trueClientIP); tcip != "" {
-		return tcip
-	} else if xrip := h.Get(xRealIP); xrip != "" {
-		return xrip
-	} else if xff := h.Get(xForwardedFor); xff != "" {
-		i := strings.Index(xff, ",")
-		if i == -1 {
-			i = len(xff)
-		}
-		return xff[:i]
-	} else if xeea := h.Get(xEnvoyExternalAddress); xeea != "" {
-		return xeea
-	}
-
-	return ""
 }
