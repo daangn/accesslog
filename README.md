@@ -1,6 +1,6 @@
 # accesslog
 
-[![API Reference](https://img.shields.io/badge/api-reference-blue.svg)](https://pkg.go.dev/mod/github.com/daangn/accesslog)
+[![GoDoc](https://godoc.org/github.com/daangn/accesslog?status.svg)](https://godoc.org/github.com/daangn/accesslog)
 
 accesslog provides access logs that capture detailed information about requests sent to your services. Each log contains information such as the time the request was created, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
 
