@@ -137,7 +137,7 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 			e.Str("peer", p.Addr.String())
 		}
 	}
-	if le.cfg.withResponse {
+	if le.cfg.withRequest {
 		var m jsonpb.Marshaler
 		if p, ok := le.req.(proto.Message); ok {
 			if s, err := m.MarshalToString(p); err == nil {
@@ -145,7 +145,7 @@ func (le *DefaultGRPCLogEntry) Write(t time.Time) {
 			}
 		}
 	}
-	if le.cfg.withRequest {
+	if le.cfg.withResponse {
 		var m jsonpb.Marshaler
 		if p, ok := (*le.res).(proto.Message); ok {
 			if s, err := m.MarshalToString(p); err == nil {
