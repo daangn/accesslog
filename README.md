@@ -21,7 +21,7 @@ import (
 
 	"github.com/daangn/accesslog"
 	"github.com/daangn/accesslog/middleware"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
 )
 
