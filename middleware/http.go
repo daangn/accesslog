@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	chi_middleware "github.com/go-chi/chi/middleware"
+	chi_middleware "github.com/go-chi/chi/v5/middleware"
 
 	"github.com/daangn/accesslog"
 )

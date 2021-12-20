@@ -10,8 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/middleware"
-	chi_middleware "github.com/go-chi/chi/middleware"
+	chi_middleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 )
 
@@ -34,13 +33,13 @@ func NewHTTPLogger(w io.Writer, f HTTPLogFormatter) *HTTPLogger {
 }
 
 // NewLogEntry returns a New LogEntry.
-func (l *HTTPLogger) NewLogEntry(r *http.Request, ww middleware.WrapResponseWriter) LogEntry {
+func (l *HTTPLogger) NewLogEntry(r *http.Request, ww chi_middleware.WrapResponseWriter) LogEntry {
 	return l.f.NewLogEntry(l.l, r, ww)
 }
 
 // HTTPLogFormatter is the interface for NewLogEntry method.
 type HTTPLogFormatter interface {
-	NewLogEntry(l *zerolog.Logger, r *http.Request, ww middleware.WrapResponseWriter) LogEntry
+	NewLogEntry(l *zerolog.Logger, r *http.Request, ww chi_middleware.WrapResponseWriter) LogEntry
 }
 
 type httpConfig struct {
@@ -65,7 +64,7 @@ func NewDefaultHTTPLogFormatter(opts ...httpOption) *DefaultHTTPLogFormatter {
 }
 
 // NewLogEntry returns a New LogEntry formatted in DefaultHTTPLogFormatter.
-func (f *DefaultHTTPLogFormatter) NewLogEntry(l *zerolog.Logger, r *http.Request, ww middleware.WrapResponseWriter) LogEntry {
+func (f *DefaultHTTPLogFormatter) NewLogEntry(l *zerolog.Logger, r *http.Request, ww chi_middleware.WrapResponseWriter) LogEntry {
 	return &DefaultHTTPLogEntry{
 		cfg: f.cfg,
 		l:   l,
