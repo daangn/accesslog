@@ -53,14 +53,14 @@ func metadataMap(ms []string) map[string]string {
 // WithRequest specifies whether gRPC requests should be captured by the logger.
 func WithRequest() grpcOption {
 	return func(cfg *grpcConfig) {
-		cfg.withResponse = true
+		cfg.withRequest = true
 	}
 }
 
 // WithResponse specifies whether gRPC responses should be captured by the logger.
 func WithResponse() grpcOption {
 	return func(cfg *grpcConfig) {
-		cfg.withRequest = true
+		cfg.withResponse = true
 	}
 }
 
