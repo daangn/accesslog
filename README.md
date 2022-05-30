@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/daangn/accesslog?status.svg)](https://godoc.org/github.com/daangn/accesslog)
 
-accesslog provides access logs that capture detailed information about requests sent to your services. Each log contains information such as the time the request was created, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
+accesslog provides detailed informed access logs of requests sent to your services. Each log contains information such as the timestamp of the request created, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
 
 ## Installation
 ```shell
@@ -54,4 +54,4 @@ In this library, the follwing log writers are available.
 - stdout
 - fluentd/fluent-bit
 
-If you want one for yours, it's simple. Just implements the io.Writer.
+If you want one for yours, it's simple. Just implement the io.Writer.
