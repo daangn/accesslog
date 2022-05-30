@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/daangn/accesslog?status.svg)](https://godoc.org/github.com/daangn/accesslog)
 
-accesslog provides access logs that captures detailed information about requests sent to your services. Each log contains information such as the timestamp of the request created, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
+accesslog provides detailed informed access logs of requests sent to your services. Each log contains information such as the timestamp of the request created, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyze traffic patterns and troubleshoot issues.  
 
 ## Installation
 ```shell
