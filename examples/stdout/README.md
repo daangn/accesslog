@@ -1,5 +1,5 @@
 # stdout
-This example is simple use case with standard output. In this scenario, We print the access log to standard output.
+This example is a simple use case with standard output. In this scenario, we print the access log to standard output.
 
 1. Run application.
 ```

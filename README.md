@@ -41,14 +41,14 @@ func main() {
 ```
 
 go run above code in your terminal, and then execute `curl localhost:3000/ping` in another terminal.
-After, you can see some logs in your terminal like below.
+Afterward, you can see some logs in your terminal like below.
 ```
 {"protocol":"http","path":"/ping","status":"200","ua":"curl/7.64.1","time":"2021-12-09T02:39:46.026696Z","elapsed(ms)":0.033,"data":"{\"foo\": \"bar\"}"}
 ```
 
 Check out the [examples](examples) for more!
 
-## Log writer
+## Log writers
 In this library, the follwing log writers are available.
 
 - stdout
