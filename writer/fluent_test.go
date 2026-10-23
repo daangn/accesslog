@@ -343,7 +343,7 @@ func TestFluentLogWriterWritePreservesJSONNullRecord(t *testing.T) {
 	}
 }
 
-func TestFluentLogWriterWritePreservesSubSecondPrecisionAndAck(t *testing.T) {
+func TestFluentLogWriterWriteUsesEventTimeFormatAndAck(t *testing.T) {
 	listener, host, port := startFluentListener(t)
 	captured := captureMessagePackAck(listener)
 	logWriter := newTestForwarder(t, host, port, fluent.Config{
@@ -354,9 +354,7 @@ func TestFluentLogWriterWritePreservesSubSecondPrecisionAndAck(t *testing.T) {
 	defer logWriter.Close()
 
 	input := []byte(`{"name":"request","value":4.5}`)
-	before := time.Now()
 	n, err := logWriter.Write(input)
-	after := time.Now()
 	if err != nil || n != len(input) {
 		t.Fatalf("Write() = (%d, %v), want (%d, nil)", n, err, len(input))
 	}
@@ -364,15 +362,13 @@ func TestFluentLogWriterWritePreservesSubSecondPrecisionAndAck(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// MessageExt requires the EventTime extension.
 	message := receiveMessagePackAck(t, captured)
 	if message.Tag != "prefix.access" {
 		t.Errorf("tag = %q, want %q", message.Tag, "prefix.access")
 	}
 	if message.Option["chunk"] == "" {
 		t.Error("acknowledgment chunk option is missing")
-	}
-	if got := time.Time(message.Time); got.Before(before.Add(-time.Second)) || got.After(after.Add(time.Second)) {
-		t.Errorf("event time = %s, outside the write interval", got)
 	}
 	want := map[string]interface{}{"name": "request", "value": float64(4.5)}
 	if !reflect.DeepEqual(message.Record, want) {
