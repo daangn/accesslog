@@ -1,8 +1,10 @@
 package writer
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/fluent/fluent-logger-golang/fluent"
@@ -61,9 +63,52 @@ func (f *FluentLogWriter) Write(p []byte) (n int, err error) {
 		return 0, fmt.Errorf("fluent logger write: %w", err)
 	}
 
-	if err := f.forwarder.Post(f.tag, m); err != nil {
+	// Keep Unmarshal's whole-input validation, then preserve integer digits for Fluent.
+	decoder := json.NewDecoder(bytes.NewReader(p))
+	decoder.UseNumber()
+	if err := decoder.Decode(&m); err != nil {
+		return 0, fmt.Errorf("fluent logger write: %w", err)
+	}
+	message, err := convertJSONNumbers(m)
+	if err != nil {
+		return 0, fmt.Errorf("fluent logger write: %w", err)
+	}
+
+	if err := f.forwarder.Post(f.tag, message); err != nil {
 		return 0, fmt.Errorf("fluent logger write: %w", err)
 	}
 
 	return len(p), nil
+}
+
+func convertJSONNumbers(value interface{}) (interface{}, error) {
+	switch value := value.(type) {
+	case json.Number:
+		if value != "-0" {
+			if integer, err := value.Int64(); err == nil {
+				return integer, nil
+			}
+			if integer, err := strconv.ParseUint(value.String(), 10, 64); err == nil {
+				return integer, nil
+			}
+		}
+		return value.Float64()
+	case map[string]interface{}:
+		for key, nested := range value {
+			converted, err := convertJSONNumbers(nested)
+			if err != nil {
+				return nil, err
+			}
+			value[key] = converted
+		}
+	case []interface{}:
+		for index, nested := range value {
+			converted, err := convertJSONNumbers(nested)
+			if err != nil {
+				return nil, err
+			}
+			value[index] = converted
+		}
+	}
+	return value, nil
 }
