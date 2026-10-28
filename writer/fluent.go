@@ -60,8 +60,18 @@ func (f *FluentLogWriter) Write(p []byte) (n int, err error) {
 	if err := json.Unmarshal(p, &m); err != nil {
 		return 0, fmt.Errorf("fluent logger write: %w", err)
 	}
+	if m == nil {
+		// PostWithTime copies a nil map into an empty record before encoding it.
+		m = make(map[string]interface{})
+	}
 
-	if err := f.forwarder.Post(f.tag, m); err != nil {
+	// Match PostWithTime's tag/time handling while bypassing its reflection-based map copy.
+	timeNow := time.Now()
+	tag := f.tag
+	if prefix := f.forwarder.TagPrefix; len(prefix) > 0 {
+		tag = prefix + "." + tag
+	}
+	if err := f.forwarder.EncodeAndPostData(tag, timeNow, m); err != nil {
 		return 0, fmt.Errorf("fluent logger write: %w", err)
 	}
 
