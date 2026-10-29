@@ -1,10 +1,10 @@
 module github.com/daangn/accesslog
 
-go 1.17
+go 1.24
 
 require (
 	github.com/fluent/fluent-logger-golang v1.8.0
-	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/golang/protobuf v1.5.2
 	github.com/rs/zerolog v1.26.0
 	google.golang.org/grpc v1.42.0
